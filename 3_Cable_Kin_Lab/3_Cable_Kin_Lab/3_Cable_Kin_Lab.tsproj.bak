@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.50">
+	<Project ProjectGUID="{8BBFF288-5A10-4F5F-A3F8-6920787364B2}" TargetNetId="5.58.183.60.1.1" Target64Bit="true" ShowHideConfigurations="#x6">
+		<System>
+			<Tasks>
+				<Task Id="5" Priority="20" CycleTime="100000" AmsPort="350" AdtTasks="true">
+					<Name>PlcTask</Name>
+				</Task>
+			</Tasks>
+		</System>
+		<Motion>
+			<NC File="NC.xti"/>
+		</Motion>
+		<Plc>
+			<Project File="PLC_Kin4DCable.xti"/>
+		</Plc>
+		<Io>
+			<Device File="Device 3 (EtherCAT).xti" Id="3"/>
+		</Io>
+		<SymbolWatch>
+			<Variable>TINC^NC-Task 1 SAF^Axes^Hook 1^Outputs^ToPlc^ActPos</Variable>
+			<Variable>TINC^NC-Task 1 SAF^Axes^Hook 2^Outputs^ToPlc^ActPos</Variable>
+			<Variable>TINC^NC-Task 1 SAF^Axes^Hook 3^Outputs^ToPlc^ActPos</Variable>
+			<Variable>TINC^NC-Task 1 SAF^Axes^Hook 4^Outputs^ToPlc^ActPos</Variable>
+		</SymbolWatch>
+	</Project>
+	<Mappings>
+		<MappingInfo Identifier="{00000000-0020-0304-1000-040320000403}" Id="#x02030010"/>
+		<MappingInfo Identifier="{00000000-0030-0304-1000-040331000403}" Id="#x02030020"/>
+		<MappingInfo Identifier="{05000010-2001-0850-1000-040300205008}" Id="#x02030030" Watchdog="14000000040000000400000004000000"/>
+	</Mappings>
+</TcSmProject>

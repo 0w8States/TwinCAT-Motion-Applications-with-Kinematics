@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_Power" Id="{f4074599-01e5-40b3-b609-a36846c6bc1f}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Power
+VAR_INPUT
+	bEnable			: BOOL := FALSE;
+	fOverride		: LREAL := 1.0;
+END_VAR
+VAR_IN_OUT
+	stAxisAcs		: ARRAY[1..4] OF AXIS_REF;
+	stAxisMcs		: ARRAY[1..3] OF AXIS_REF;
+END_VAR
+VAR_OUTPUT
+	bAllAxesReady	: BOOL := FALSE;
+	bError			: BOOL;
+END_VAR
+VAR
+	fbPowerAcs		: ARRAY [1..4] OF MC_Power;
+	fbPowerMcs	 	: ARRAY [1..3] OF MC_Power;
+	i				: UINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[bAllAxesReady := TRUE;
+bError := FALSE;
+
+FOR i:=1 TO 4 DO
+	fbPowerAcs[i](Axis:=stAxisAcs[i],
+		Enable			:= bEnable,
+		Enable_Positive	:= bEnable,
+		Enable_Negative	:= bEnable
+	);
+	
+	IF i <= 3 THEN
+		fbPowerMcs[i](Axis:=stAxisMcs[i],
+			Enable			:= bEnable,
+			Enable_Positive	:= bEnable,
+			Enable_Negative	:= bEnable
+		);
+		
+		bAllAxesReady := bAllAxesReady AND fbPowerAcs[i].Status AND fbPowerMcs[i].Status; 
+		bError := bError OR fbPowerAcs[i].Error OR fbPowerMcs[i].Error;
+		
+	ELSE
+		bAllAxesReady := bAllAxesReady AND fbPowerAcs[i].Status;
+		bError := bError OR fbPowerAcs[i].Error;
+	END_IF
+	 
+END_FOR]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Power">
+      <LineId Id="24" Count="8" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="37" Count="3" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="64" Count="1" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="60" Count="1" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

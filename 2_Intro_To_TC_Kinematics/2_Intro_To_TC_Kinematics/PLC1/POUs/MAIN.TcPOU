@@ -139,7 +139,7 @@ CASE nState OF
 		END_IF
 	{endregion}
 	  
-	{region 'Step 1 - Assemble the Axes List Struct'}	
+	{region 'Step 1 - Assemble the Axes List Struct'}
 	60: (*
 		**	Step 1 - Assemble the Axes List Struct
 		*)
@@ -192,7 +192,7 @@ CASE nState OF
 		(*******************************************)					   
 	{endregion}	
 		 		  	 
-	{region 'Step 3 - Move the configuration'}		
+	{region 'Step 3 - Move the configuration'}
 	100: (*
 		** Step 3 - Move the configuration
 		*)
@@ -231,7 +231,7 @@ CASE nState OF
 		END_IF
 	{endregion}
 	
-	{region 'Step 6 - Unlock Trafo and Modify Params'}		
+	{region 'Step 6 - Unlock Trafo and Modify Params'}
 	130: (*
 		** Step 6 - Unlock Trafo and Modify Params
 		*)
@@ -321,15 +321,28 @@ IF bStep4 THEN
 (***********************************************)
 END_IF
 {endregion}
-
-]]></ST>
+	 ]]></ST>
     </Implementation>
     <LineIds Name="MAIN">
-      <LineId Id="988" Count="72" />
+      <LineId Id="988" Count="2" />
+      <LineId Id="1400" Count="1" />
+      <LineId Id="993" Count="6" />
+      <LineId Id="1399" Count="0" />
+      <LineId Id="1001" Count="38" />
+      <LineId Id="1398" Count="0" />
+      <LineId Id="1041" Count="6" />
+      <LineId Id="1397" Count="0" />
+      <LineId Id="1049" Count="11" />
       <LineId Id="1212" Count="0" />
       <LineId Id="1214" Count="1" />
-      <LineId Id="1062" Count="35" />
-      <LineId Id="1106" Count="4" />
+      <LineId Id="1062" Count="2" />
+      <LineId Id="1396" Count="0" />
+      <LineId Id="1066" Count="19" />
+      <LineId Id="1391" Count="0" />
+      <LineId Id="1087" Count="10" />
+      <LineId Id="1106" Count="0" />
+      <LineId Id="1395" Count="0" />
+      <LineId Id="1108" Count="2" />
       <LineId Id="1114" Count="12" />
       <LineId Id="1229" Count="4" />
       <LineId Id="1240" Count="0" />
@@ -340,12 +353,14 @@ END_IF
       <LineId Id="1135" Count="0" />
       <LineId Id="1251" Count="0" />
       <LineId Id="1250" Count="0" />
-      <LineId Id="1247" Count="0" />
+      <LineId Id="1392" Count="0" />
       <LineId Id="1253" Count="2" />
       <LineId Id="1248" Count="0" />
       <LineId Id="1136" Count="0" />
       <LineId Id="1252" Count="0" />
-      <LineId Id="1137" Count="4" />
+      <LineId Id="1137" Count="0" />
+      <LineId Id="1394" Count="0" />
+      <LineId Id="1139" Count="2" />
       <LineId Id="1268" Count="0" />
       <LineId Id="1274" Count="0" />
       <LineId Id="1277" Count="0" />
@@ -366,8 +381,8 @@ END_IF
       <LineId Id="1155" Count="2" />
       <LineId Id="1160" Count="31" />
       <LineId Id="1211" Count="0" />
-      <LineId Id="1192" Count="18" />
-      <LineId Id="340" Count="0" />
+      <LineId Id="1192" Count="17" />
+      <LineId Id="1402" Count="0" />
     </LineIds>
   </POU>
 </TcPlcObject>

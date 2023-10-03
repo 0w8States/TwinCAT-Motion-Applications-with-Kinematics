@@ -1,0 +1,431 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="MAIN" Id="{86e0770b-170d-41fd-ad76-e30f165c7b3f}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	ref : AXES_GROUP_REF;
+PlcToNc : PLCTONC3_GROUP_REF;
+NcToPlc : NC3TOPLC_GROUP_REF;
+PlcToMc : CDT_PLCTOMC_GROUP;
+McToPlc : CDT_MCTOPLC_GROUP;
+
+
+	(* user interaction *)
+	bUserStartSequence		: BOOL 	:= FALSE;
+	fUserOverride			: LREAL	:= 100.0;
+	fUserVelocityToStartPos	: LREAL := 100;
+	bUserStop				: BOOL := FALSE;
+	bUserForceUngroup		: BOOL := FALSE;
+	bUserForceReset			: BOOL := FALSE;
+	
+	(* *)
+	nState					: INT := 0;
+	
+	stAxisAcs				: ARRAY[1..4] OF AXIS_REF;
+	stAxisMcs				: ARRAY[1..3] OF AXIS_REF;
+	
+	stKinRefIn    AT %I*	: NCTOPLC_NCICHANNEL_REF;
+	stKinRefOut   AT %Q*  	: PLCTONC_NCICHANNEL_REF;
+	
+	fbPower					: FB_Power;
+	fbKinConfigGroup      	: FB_KinConfigGroup;	
+	fbKinResetGroup			: FB_KinResetGroup;
+	fbKinCalcTrafo			: FB_KinCalcTrafo;
+	stKinAxesList          	: ST_KinAxes;
+	
+		
+	fbMoveAbsoluteAx1		: MC_MoveAbsolute;
+	fbMoveAbsoluteAx2		: MC_MoveAbsolute;
+	fbMoveAbsoluteAx3		: MC_MoveAbsolute;
+	fbMoveAbsoluteAx4		: MC_MoveAbsolute;
+	
+	stMCgroupRef			: AXES_GROUP_REF;
+	fbAddMcsAxesXyzToMcGroup	: FB_AddMcsAxesXyzToMcGroup;
+	fbUngroupAxes			: MC_UngroupAllAxes;
+	fbMCgroupEnable			: MC_GroupEnable;
+	fbMCgroupReset			: MC_GroupReset;
+	fbMCgroupMoveLinPrep	: MC_MoveLinearAbsolutePreparation;
+	fbMCgroupMovePath		: MC_MovePath;
+	fbMCgroupStop			: MC_GroupStop;
+	fbMCgroupReadStatus		: MC_GroupReadStatus;
+	
+	bBuildKinGroup			: BOOL;
+	
+	buffer					: ARRAY[1..4096] OF BYTE;
+	path					: MC_PATH_DATA_REF(ADR(buffer), SIZEOF(buffer));
+	fVelocity				: LREAL := 100;
+	bMovePrepError			: BOOL;
+	bPickCycle				: BOOL;
+	bExecutePath			: BOOL := TRUE;
+	
+	aMCgroupTargetPos		: ARRAY[1..3] OF MC_LREAL;
+	aMCgroupTransitionParam	: ARRAY[1..2] OF MC_LREAL;
+	bDoneHookup: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ // =========================================
+// ToDo: Add Description
+// =========================================
+
+stMCgroupRef.NcToPlc.CM.InvokeId;
+
+ReadAxisStatus();
+
+// Power all axes
+fbPower(
+	bEnable := TRUE, 
+	fOverride := fUserOverride,
+	stAxisAcs := stAxisAcs,
+	stAxisMcs := stAxisMcs, 
+	bAllAxesReady =>,
+	bError => );
+
+IF fbPower.bError THEN	
+	(* ToDo: add error handling *)
+END_IF	
+
+CASE nState OF
+0:	// read the IDs from the cyclic axis interface so the axes can mapped later to the kinematic group 
+	IF bUserStartSequence AND fbPower.bAllAxesReady THEN
+		stKinAxesList.nAxisIdsAcs[1] := stAxisAcs[1].NcToPlc.AxisId;
+		stKinAxesList.nAxisIdsAcs[2] := stAxisAcs[2].NcToPlc.AxisId;
+		stKinAxesList.nAxisIdsAcs[3] := stAxisAcs[3].NcToPlc.AxisId;
+		stKinAxesList.nAxisIdsAcs[4] := stAxisAcs[4].NcToPlc.AxisId;
+		
+		stKinAxesList.nAxisIdsMcs[1] := stAxisMcs[1].NcToPlc.AxisId;
+		stKinAxesList.nAxisIdsMcs[2] := stAxisMcs[2].NcToPlc.AxisId;
+		stKinAxesList.nAxisIdsMcs[3] := stAxisMcs[3].NcToPlc.AxisId;
+		
+		bUserStartSequence := FALSE;
+		nState := nState + 1;
+	END_IF
+	
+1:	
+	fbMoveAbsoluteAx1(Axis:= stAxisAcs[1], Execute:= TRUE, Position:= 550, Velocity:= fUserVelocityToStartPos);
+	fbMoveAbsoluteAx2(Axis:= stAxisAcs[2], Execute:= TRUE, Position:= 550, Velocity:= fUserVelocityToStartPos);
+	fbMoveAbsoluteAx3(Axis:= stAxisAcs[3], Execute:= TRUE, Position:= 550, Velocity:= fUserVelocityToStartPos);
+	fbMoveAbsoluteAx4(Axis:= stAxisAcs[4], Execute:= TRUE, Position:= 550, Velocity:= fUserVelocityToStartPos);
+
+
+	IF fbMoveAbsoluteAx1.Done AND fbMoveAbsoluteAx2.Done AND fbMoveAbsoluteAx3.Done AND fbMoveAbsoluteAx4.Done THEN
+		fbMoveAbsoluteAx1( Axis:= stAxisAcs[1], Execute:= FALSE); 
+		fbMoveAbsoluteAx2( Axis:= stAxisAcs[2], Execute:= FALSE); 
+		fbMoveAbsoluteAx3( Axis:= stAxisAcs[3], Execute:= FALSE); 
+		fbMoveAbsoluteAx4( Axis:= stAxisAcs[4], Execute:= FALSE);	
+		nState := nState +1;
+	ELSIF fbMoveAbsoluteAx1.Error OR fbMoveAbsoluteAx2.Error OR fbMoveAbsoluteAx3.Error OR fbMoveAbsoluteAx4.Error THEN
+		(* ToDo: add error handling *)			
+		nState := nState +1000;	
+	END_IF	
+
+2 : IF bDoneHookup THEN
+		bDoneHookup:= FALSE;
+		nState := nState +1;
+	END_IF
+	
+3:	// configure and build kinematic group
+	fbKinConfigGroup(
+		bExecute       := TRUE,
+		bCartesianMode := TRUE,
+		stAxesList     := stKinAxesList,
+		stKinRefIn     := stKinRefIn ); 
+	
+	IF fbKinConfigGroup.bDone THEN
+		fbKinConfigGroup(bExecute := FALSE, stAxesList := stKinAxesList, stKinRefIn := stKinRefIn);
+		nState := nState +1;
+	ELSIF fbKinConfigGroup.bError THEN
+		(* ToDo: add error handling *)			
+		nState := nState +1000;	
+	END_IF	
+	
+4:	// add MCS axes to MC Group XYZ 
+	// take care thate MC Group Parameter "Spatial Axes Convention" is set to "mcAxesConv3DCartesianXYZ"
+	fbAddMcsAxesXyzToMcGroup(bExecute := TRUE, stAxis := stAxisMcs, stGroupRef := stMCgroupRef);
+	
+	IF fbAddMcsAxesXyzToMcGroup.bDone THEN	
+		fbAddMcsAxesXyzToMcGroup(bExecute := FALSE, stAxis := stAxisMcs, stGroupRef := stMCgroupRef);
+		nState := nState+1;
+	ELSIF fbAddMcsAxesXyzToMcGroup.bError THEN
+		(* ToDo: add error handling *)			
+		nState := nState +1000;	
+	END_IF
+
+5:	// enable MC group
+	fbMCgroupEnable(AxesGroup:=stMCgroupRef , Execute:=TRUE);
+	 
+	IF fbMCgroupEnable.Done THEN
+		//IF bUserIncrementStep THEN
+			fbMCgroupEnable(AxesGroup:=stMCgroupRef , Execute:=FALSE);
+			nState := nState+1;
+		//END_IF
+	ELSIF fbMCgroupEnable.Error THEN
+		nState := nState +1000;
+	END_IF
+
+6:	// fill path table and start execution with fbMovePath
+	//IF bUserIncrementStep OR bUserInfiniteMovement THEN
+		IF bPickCycle THEN 
+			//Prepare table (MC_MoveLinearAbsolutePreparation)
+			A_PreparePathPick();
+		ELSE
+			//Prepare table (MC_MoveLinearAbsolutePreparation)	
+			A_PreparePathPlace();
+		END_IF	
+		bPickCycle := NOT bPickCycle;		
+		
+		IF bMovePrepError THEN
+			nState := nState +1000;
+		ELSE
+			fbMCgroupMovePath(AxesGroup:= stMCgroupRef, PathData:= path, Execute:= FALSE);
+			//IF bUserInfiniteMovement THEN
+				nState := nState +1;
+			(*ELSIF bUserIncrementStep THEN
+				nNextState := nState + 1;
+				nState := 101;
+			END_IF	*)			
+		END_IF	
+	//END_IF	
+
+7: //Execute prepared movement
+	fbMCgroupMovePath(
+		AxesGroup:= stMCgroupRef, 
+		PathData:= path, 
+		Execute:= bExecutePath
+	);
+	
+	IF fbMCgroupMovePath.Done THEN
+		(*IF bUserIncrementStep THEN
+			//ungroup axes
+			nNextState := 50;
+			nState := 101;
+			fbMCgroupMovePath(AxesGroup:= stMCgroupRef, PathData:= path, Execute:= FALSE);
+		ELSIF bUserInfiniteMovement THEN*)
+			nState := nState -1;
+			//fVelocity := 3000;
+			fbMCgroupMovePath(AxesGroup:= stMCgroupRef, PathData:= path, Execute:= FALSE);
+		//END_IF
+	ELSIF fbMCgroupMovePath.Error THEN
+		nState := nState + 1000;	
+	END_IF	
+20:
+	fbMCgroupStop(AxesGroup:=stMCgroupRef, Execute:= FALSE);
+	fbMCgroupStop(AxesGroup:=stMCgroupRef, Execute:= TRUE, Jerk:= MC_IGNORE);
+	nState := nState + 1;
+21:
+	fbMCgroupStop(AxesGroup:=stMCgroupRef,Execute:= TRUE);
+	IF fbMCgroupStop.Done THEN
+		//IF bUserIncrementStep THEN
+			fbMCgroupStop(AxesGroup:=stMCgroupRef, Execute:= FALSE);
+			nState := 0;
+			//nNextState := 0;
+			//nState := 101;
+		//END_IF 		
+	ELSIF fbMCgroupStop.Error THEN
+		nState := nState +1000;
+	END_IF
+50:
+	//Disable group and remove all axes 
+	fbUngroupAxes(AxesGroup:= stMCgroupRef, Execute:= FALSE);
+	//Check that axes are not moving else we will get a position jump
+	IF fbMCgroupReadStatus.GroupStandby OR fbMCgroupReadStatus.GroupErrorStop OR fbMCgroupReadStatus.GroupNotReady THEN
+		fbUngroupAxes(AxesGroup:= stMCgroupRef, Execute:= TRUE);
+		nState := nState + 1;
+	END_IF	
+51:
+	fbUngroupAxes(
+		AxesGroup:= stMCgroupRef , 
+		Execute:= TRUE, 
+		Done=> , 
+		Busy=> , 
+		Error=> , 
+		ErrorId=> );
+	
+	IF fbUngroupAxes.Done THEN
+		(*IF bUserIncrementStep THEN
+			nNextState := -4;
+			nState := 101;
+		END_IF*)
+	ELSIF fbUngroupAxes.Error THEN
+		nState := nState +1000;
+	END_IF
+80:
+	fbMCgroupReset(AxesGroup:= stMCgroupRef , Execute:= FALSE);
+	fbMCgroupReset(AxesGroup:= stMCgroupRef , Execute:= TRUE);
+	nState := nState +1;
+81:	
+	fbMCgroupReset(
+		AxesGroup:= stMCgroupRef , 
+		Execute:= , 
+		Done=> , 
+		Busy=> , 
+		Error=> , 
+		ErrorId=> );
+	
+	IF fbMCgroupReset.Done THEN
+		(*IF bUserIncrementStep THEN
+			IF fbGroupReadStatus.GroupDisabled THEN
+				nNextState := -4;
+			ELSE
+				nNextState := 0;
+			END_IF
+			//nState := 101;
+		END_IF	*)			
+	END_IF	
+(*101:
+	IF (bUserIncrementStep) THEN				
+		nState := nNextState;
+		bUserIncrementStep := FALSE;
+	END_IF*)
+1000..9999:
+	;//Error				
+END_CASE
+
+IF bUserStop THEN
+	nState := 20;
+	bUserStop := FALSE;
+END_IF
+IF bUserForceUngroup THEN
+	nState := 50;
+	bUserForceUngroup := FALSE;
+END_IF
+IF bUserForceReset THEN
+	nState := 80;
+	bUserForceReset := FALSE;
+END_IF
+]]></ST>
+    </Implementation>
+    <Action Name="A_PreparePathPick" Id="{dcb08973-a115-429b-89e2-ef77d8cbb861}">
+      <Implementation>
+        <ST><![CDATA[path.ClearPath();  //Clear nodes that were in path
+
+fbMCgroupMoveLinPrep.Position					:= ADR(aMCgroupTargetPos); //pointer to position array
+fbMCgroupMoveLinPrep.PositionCount 				:= 3; //number of axes in group
+fbMCgroupMoveLinPrep.TransitionParameter		:= ADR (aMCgroupTransitionParam); //pointer to transition parameter array
+fbMCgroupMoveLinPrep.TransitionParameterCount	:= 2; //number of transition parameters, has to be set always 2
+fbMCgroupMoveLinPrep.BufferMode					:= mcBlendingPrevious;
+fbMCgroupMoveLinPrep.TransitionMode				:= mcTransModeCornerDistanceAdvanced;
+//Set dynamics to default values of the axes
+fbMCgroupMoveLinPrep.Acceleration				:= MC_DEFAULT;
+fbMCgroupMoveLinPrep.Deceleration				:= MC_DEFAULT;
+fbMCgroupMoveLinPrep.Jerk						:= MC_DEFAULT;
+
+//1st node
+aMCgroupTargetPos[1]				:= 0;
+aMCgroupTargetPos[2]				:= 300;
+aMCgroupTargetPos[3]				:= -500;
+//aTargetPos[4]				:= 0;
+aMCgroupTransitionParam[1]			:= 0; //blending distance on previous segment, no influence here
+aMCgroupTransitionParam[2]			:= 0; //blending distance on this segment, no influence here
+fbMCgroupMoveLinPrep(PathData:= path , Velocity:= fVelocity, InvokeId:= 10);
+bMovePrepError := bMovePrepError OR fbMCgroupMoveLinPrep.Error;
+
+//fbBlockerPreparation(PathData:= path, BlockerId:= 1, BufferMode:= MC_BUFFER_MODE.mcBuffered, InvokeId := 15);
+
+aMCgroupTargetPos[1]				:= 700;
+aMCgroupTargetPos[2]				:= 300;
+aMCgroupTargetPos[3]				:= -500;
+//aTargetPos[4]				:= 0;
+aMCgroupTransitionParam[1]			:= 250; //blending distance on previous segment (InvokeId=10), defines when to leave line
+aMCgroupTransitionParam[2]			:= 250; //blending distance on this segment, defines latest positionn to be back  on line of InovkeId=20 
+fbMCgroupMoveLinPrep(PathData:= path , Velocity:= fVelocity, InvokeId:= 20); 
+bMovePrepError := bMovePrepError OR fbMCgroupMoveLinPrep.Error;
+
+aMCgroupTargetPos[1]				:= 700;
+aMCgroupTargetPos[2]				:= 0;
+aMCgroupTargetPos[3]				:= -500;
+//aTargetPos[4]				:= 0;
+aMCgroupTransitionParam[1]			:= 250; 
+aMCgroupTransitionParam[2]			:= 250;
+fbMCgroupMoveLinPrep(PathData:= path , Velocity:= fVelocity, InvokeId:= 30);
+bMovePrepError := bMovePrepError OR fbMCgroupMoveLinPrep.Error;
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_PreparePathPlace" Id="{807eb52d-d6c5-48fb-b361-4b935b271568}">
+      <Implementation>
+        <ST><![CDATA[path.ClearPath(); //Clear nodes that were in path
+
+fbMCgroupMoveLinPrep.Position						:= ADR(aMCgroupTargetPos); //pointer to position array
+fbMCgroupMoveLinPrep.PositionCount 				:= 3; //number of axes in group
+fbMCgroupMoveLinPrep.TransitionParameter			:= ADR (aMCgroupTransitionParam); //pointer to transition parameter array
+fbMCgroupMoveLinPrep.TransitionParameterCount		:= 2; //number of transition parameters, has to be set always 2
+fbMCgroupMoveLinPrep.BufferMode					:= mcBlendingPrevious;
+fbMCgroupMoveLinPrep.TransitionMode				:= mcTransModeCornerDistanceAdvanced;
+fbMCgroupMoveLinPrep.Acceleration					:= MC_DEFAULT;
+fbMCgroupMoveLinPrep.Deceleration					:= MC_DEFAULT;
+fbMCgroupMoveLinPrep.Jerk							:= MC_DEFAULT;
+
+(*aTargetPos[1]				:= 700;
+aTargetPos[2]				:= 0;
+aTargetPos[3]				:= 300;
+aTargetPos[4]				:= 0;
+aTransitionParam[1]			:= 0; //blending distance on previous segment, no influence here
+aTransitionParam[2]			:= 0; //blending distance on this segment, no influence here
+fbMoveLinPrep(PathData:= path , Velocity:= 3000, InvokeId:= 15);
+bMovePrepError := bMovePrepError OR fbMoveLinPrep.Error; *)
+
+aMCgroupTargetPos[1]				:= 0;
+aMCgroupTargetPos[2]				:= 0;
+aMCgroupTargetPos[3]				:= -500;
+//aTargetPos[4]				:= 0;
+aMCgroupTransitionParam[1]			:= 0; //blending distance on previous segment (InvokeId=10), defines when to leave line
+aMCgroupTransitionParam[2]			:= 0; //blending distance on this segment, defines latest positionn to be back  on line of InovkeId=20
+fbMCgroupMoveLinPrep(PathData:= path , Velocity:= fVelocity, InvokeId:= 25);
+bMovePrepError := bMovePrepError OR fbMCgroupMoveLinPrep.Error;
+
+(*aTargetPos[1]				:= 0;
+aTargetPos[2]				:= 0;
+aTargetPos[3]				:= 0;
+aTargetPos[4]				:= 0;
+aTransitionParam[1]			:= 200; 
+aTransitionParam[2]			:= 250;
+fbMoveLinPrep(PathData:= path , Velocity:= 3000, InvokeId:= 35);
+bMovePrepError := bMovePrepError OR fbMoveLinPrep.Error;*)
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ReadAxisStatus" Id="{a4122062-a39b-42af-9028-0cb09afc2932}">
+      <Implementation>
+        <ST><![CDATA[stAxisAcs[1].ReadStatus();
+stAxisAcs[2].ReadStatus();
+stAxisAcs[3].ReadStatus();
+stAxisMcs[1].ReadStatus();
+stAxisMcs[2].ReadStatus();
+stAxisMcs[3].ReadStatus();]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="MAIN">
+      <LineId Id="58" Count="2" />
+      <LineId Id="333" Count="1" />
+      <LineId Id="61" Count="21" />
+      <LineId Id="277" Count="0" />
+      <LineId Id="83" Count="12" />
+      <LineId Id="278" Count="0" />
+      <LineId Id="96" Count="5" />
+      <LineId Id="279" Count="0" />
+      <LineId Id="102" Count="4" />
+      <LineId Id="396" Count="0" />
+      <LineId Id="395" Count="0" />
+      <LineId Id="399" Count="1" />
+      <LineId Id="398" Count="0" />
+      <LineId Id="107" Count="169" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.A_PreparePathPick">
+      <LineId Id="2" Count="21" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="24" Count="17" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.A_PreparePathPlace">
+      <LineId Id="2" Count="38" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.ReadAxisStatus">
+      <LineId Id="1" Count="5" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

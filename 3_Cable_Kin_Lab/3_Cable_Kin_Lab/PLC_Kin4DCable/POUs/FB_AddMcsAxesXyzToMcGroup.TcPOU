@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FB_AddMcsAxesXyzToMcGroup" Id="{82897557-630f-42f2-9dc0-c94f0234539c}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_AddMcsAxesXyzToMcGroup
+VAR_IN_OUT
+	stAxis				: ARRAY[1..3] OF AXIS_REF;	
+	stGroupRef			: AXES_GROUP_REF;
+END_VAR
+VAR_INPUT
+	bExecute				: BOOL;
+END_VAR
+VAR_OUTPUT
+	bDone				: BOOL;
+	bBusy				: BOOL;
+	bError				: BOOL;
+END_VAR
+VAR
+	fbAddAxis			: ARRAY[1..3] OF MC_AddAxisToGroup;
+	i					: UINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[bDone := TRUE;
+bBusy := FALSE;
+bError := FALSE;
+
+fbAddAxis[1].IdentInGroup := MCS_X; //X-Axis
+fbAddAxis[2].IdentInGroup := MCS_Y; //Y-Axis
+fbAddAxis[3].IdentInGroup := MCS_Z; //Z-Axis
+
+FOR i:=1 TO 3 DO
+	fbAddAxis[i](AxesGroup:=stGroupRef, Axis := stAxis[i], Execute := bExecute);
+
+	IF (NOT fbAddAxis[i].Done) THEN
+		bDone := FALSE;
+	END_IF
+	IF (fbAddAxis[i].Busy) THEN
+		bBusy := TRUE;
+	END_IF
+	IF (fbAddAxis[i].Error) THEN
+		bError := TRUE;
+	END_IF
+END_FOR]]></ST>
+    </Implementation>
+    <LineIds Name="FB_AddMcsAxesXyzToMcGroup">
+      <LineId Id="3" Count="6" />
+      <LineId Id="11" Count="12" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

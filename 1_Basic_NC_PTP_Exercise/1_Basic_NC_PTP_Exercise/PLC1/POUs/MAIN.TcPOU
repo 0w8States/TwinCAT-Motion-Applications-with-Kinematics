@@ -81,28 +81,34 @@ CASE nState OF
 	30: (*
 		**	Exercise 2 - Gear-In Axis 2 to Axis 1
 		*)
+		(*
 		mcGearIn(Master:= Axis[1], Slave:= Axis[2], Execute:= TRUE, RatioNumerator:= 0.5, RatioDenominator:= 1);
 		IF mcGearIn.InGear THEN
 			mcGearIn(Master:= Axis[1], Slave:= Axis[2], Execute:= FALSE, RatioNumerator:= 0.5, RatioDenominator:= 1);
 			nState := nState + 10;
 		END_IF
+		*)
 	{endregion}
 	
 	{region 'Exercise 3 - External Setpoint'}		 
 	40: (*
 		**	Exercise 3 - Enable External Setpoint Generator for Axis 3
 		*)
+		(*
 		mcExtSpEnable(Axis:= Axis[3], Execute:= TRUE, Position:= 0, PositionType:= POSITIONTYPE_ABSOLUTE);
 		IF mcExtSpEnable.Done THEN
 			mcExtSpEnable(Axis:= Axis[3], Execute:= FALSE, Position:= 0, PositionType:= POSITIONTYPE_ABSOLUTE);
 			nState := nState + 10;
 		END_IF
+		*)
 	{endregion}	
 		 
 	{region 'Exercise 1 - Reversing Sequence'}		
 	50: (*
 		** Exercise 1 - Execute an absolute move on Axis 1 and wait here until done
 		*)
+			 
+		(*
 		// Execute move to Position A
 		mcMoveAbs(Axis:= Axis[1], Execute:= TRUE, Position:= fPosition, Velocity := 1000, Acceleration := 2000, Deceleration := 2000, Jerk := 5000);
 		// Check if move is complete
@@ -110,16 +116,18 @@ CASE nState OF
 			mcMoveAbs(Axis:= Axis[1], Execute:= FALSE);
 			nState := nState + 10;
 		END_IF
-		
+		*)
 	60: (*
 		** Exercise 1 - Call a dwell timer, wait here until time is elapsed
 		*)
+			 
+		(*
 		Dwell(IN:= TRUE, PT:= T#1S);
 		IF Dwell.Q THEN
 			Dwell(IN:= FALSE, PT:= T#1S);
 			nState := nState + 10;
 		END_IF
-		
+		*)
 		
 	70: (*
 		** Exercise 1 - Check what position was last issued, and command a new one
@@ -130,6 +138,8 @@ CASE nState OF
 		//ELSE
 		//	fPosition := POSITION_A;
 		//END_IF
+			 
+		(*		  
 		Random(Seed:= 1, Num=> fPosition);
 		IF Axis[1].NcToPlc.ActPos > 0 THEN
 			fPosition := fPosition * -5000.0;
@@ -137,6 +147,7 @@ CASE nState OF
 			fPosition := fPosition * 5000.0;
 		END_IF	
 		nState := nState + 10;
+		*)
 	{endregion}
 		
 	{region 'End of State Machine'}
@@ -155,6 +166,7 @@ END_CASE
 ** Exercise 3 - External Setpoint Generator Feed 
 *)
 
+(*
 // Read the status of Axis 1
 Axis[1].ReadStatus();
 
@@ -170,7 +182,7 @@ END_IF
 // Call the Setpoint Feed
 MC_ExtSetPointGenFeed(Position:= Axis[1].NcToPlc.ActPos, Velocity:= Axis[1].NcToPlc.ActVelo, Acceleration:= Axis[1].NcToPlc.ActAcc, Direction:= nDirection, Axis:= Axis[3]);
 {endregion}
-]]></ST>
+*)]]></ST>
     </Implementation>
     <LineIds Name="MAIN">
       <LineId Id="6" Count="0" />
@@ -201,22 +213,28 @@ MC_ExtSetPointGenFeed(Position:= Axis[1].NcToPlc.ActPos, Velocity:= Axis[1].NcTo
       <LineId Id="283" Count="0" />
       <LineId Id="166" Count="1" />
       <LineId Id="169" Count="1" />
+      <LineId Id="339" Count="0" />
       <LineId Id="179" Count="0" />
       <LineId Id="195" Count="0" />
       <LineId Id="198" Count="0" />
       <LineId Id="196" Count="1" />
+      <LineId Id="340" Count="0" />
       <LineId Id="171" Count="0" />
       <LineId Id="282" Count="0" />
       <LineId Id="280" Count="0" />
       <LineId Id="172" Count="2" />
+      <LineId Id="341" Count="0" />
       <LineId Id="214" Count="0" />
       <LineId Id="223" Count="0" />
       <LineId Id="226" Count="0" />
       <LineId Id="224" Count="1" />
+      <LineId Id="342" Count="0" />
       <LineId Id="281" Count="0" />
       <LineId Id="284" Count="1" />
       <LineId Id="57" Count="0" />
       <LineId Id="149" Count="1" />
+      <LineId Id="346" Count="0" />
+      <LineId Id="343" Count="0" />
       <LineId Id="58" Count="0" />
       <LineId Id="73" Count="0" />
       <LineId Id="142" Count="3" />
@@ -224,6 +242,8 @@ MC_ExtSetPointGenFeed(Position:= Axis[1].NcToPlc.ActPos, Velocity:= Axis[1].NcTo
       <LineId Id="199" Count="0" />
       <LineId Id="204" Count="1" />
       <LineId Id="200" Count="0" />
+      <LineId Id="345" Count="0" />
+      <LineId Id="344" Count="0" />
       <LineId Id="206" Count="1" />
       <LineId Id="210" Count="0" />
       <LineId Id="208" Count="1" />
@@ -236,11 +256,13 @@ MC_ExtSetPointGenFeed(Position:= Axis[1].NcToPlc.ActPos, Velocity:= Axis[1].NcTo
       <LineId Id="92" Count="0" />
       <LineId Id="146" Count="1" />
       <LineId Id="91" Count="0" />
+      <LineId Id="347" Count="1" />
       <LineId Id="163" Count="0" />
       <LineId Id="158" Count="1" />
       <LineId Id="161" Count="1" />
       <LineId Id="160" Count="0" />
       <LineId Id="155" Count="0" />
+      <LineId Id="349" Count="0" />
       <LineId Id="286" Count="0" />
       <LineId Id="106" Count="1" />
       <LineId Id="289" Count="0" />
@@ -255,6 +277,7 @@ MC_ExtSetPointGenFeed(Position:= Axis[1].NcToPlc.ActPos, Velocity:= Axis[1].NcTo
       <LineId Id="288" Count="0" />
       <LineId Id="233" Count="0" />
       <LineId Id="232" Count="0" />
+      <LineId Id="350" Count="0" />
       <LineId Id="260" Count="0" />
       <LineId Id="255" Count="0" />
       <LineId Id="243" Count="0" />

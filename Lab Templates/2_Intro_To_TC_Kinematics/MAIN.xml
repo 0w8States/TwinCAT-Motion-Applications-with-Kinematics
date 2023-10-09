@@ -1,0 +1,798 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0200">
+  <fileHeader companyName="Beckhoff Automation GmbH" productName="TwinCAT PLC Control" productVersion="3.5.13.21" creationDateTime="2023-10-09T14:50:05.3128297" />
+  <contentHeader name="PLC1" modificationDateTime="2023-10-09T14:50:05.3189547">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="1" y="1" />
+      </fbd>
+      <ld>
+        <scaling x="1" y="1" />
+      </ld>
+      <sfc>
+        <scaling x="1" y="1" />
+      </sfc>
+    </coordinateInfo>
+    <addData>
+      <data name="http://www.3s-software.com/plcopenxml/projectinformation" handleUnknown="implementation">
+        <ProjectInformation />
+      </data>
+    </addData>
+  </contentHeader>
+  <types>
+    <dataTypes />
+    <pous>
+      <pou name="MAIN" pouType="program">
+        <interface>
+          <localVars>
+            <variable name="MCS_Positions">
+              <type>
+                <array>
+                  <dimension lower="1" upper="MAX_MCS_AXES" />
+                  <baseType>
+                    <LREAL />
+                  </baseType>
+                </array>
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Status Array of MCS Position</xhtml>
+              </documentation>
+            </variable>
+            <variable name="ACS_Axis">
+              <type>
+                <array>
+                  <dimension lower="1" upper="MAX_ACS_AXES" />
+                  <baseType>
+                    <derived name="Axis_Ref" />
+                  </baseType>
+                </array>
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Axis Control Ref for ACS</xhtml>
+              </documentation>
+            </variable>
+            <variable name="MCS_Axis">
+              <type>
+                <array>
+                  <dimension lower="1" upper="MAX_MCS_AXES" />
+                  <baseType>
+                    <derived name="Axis_Ref" />
+                  </baseType>
+                </array>
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Axis Control Ref for MCS</xhtml>
+              </documentation>
+            </variable>
+            <variable name="mcACS_Power">
+              <type>
+                <array>
+                  <dimension lower="1" upper="MAX_ACS_AXES" />
+                  <baseType>
+                    <derived name="MC_Power" />
+                  </baseType>
+                </array>
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> ACS Axis Power Block</xhtml>
+              </documentation>
+            </variable>
+            <variable name="mcMCS_Power">
+              <type>
+                <array>
+                  <dimension lower="1" upper="MAX_MCS_AXES" />
+                  <baseType>
+                    <derived name="MC_Power" />
+                  </baseType>
+                </array>
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> MCS Axis Power Block</xhtml>
+              </documentation>
+            </variable>
+            <variable name="mcSetPosition">
+              <type>
+                <array>
+                  <dimension lower="1" upper="MAX_ACS_AXES" />
+                  <baseType>
+                    <derived name="MC_SetPosition" />
+                  </baseType>
+                </array>
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Axis Set Position Block</xhtml>
+              </documentation>
+            </variable>
+            <variable name="oidTrafo">
+              <type>
+                <derived name="OTCID" />
+              </type>
+              <addData>
+                <data name="http://www.3s-software.com/plcopenxml/attributes" handleUnknown="implementation">
+                  <Attributes>
+                    <Attribute Name="TcInitSymbol" Value="" />
+                  </Attributes>
+                </data>
+              </addData>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Kinematic Model Reference</xhtml>
+              </documentation>
+            </variable>
+            <variable name="in_stKinToPlc" address="%I*">
+              <type>
+                <derived name="NCTOPLC_NCICHANNEL_REF" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Struct In from Kin Channel</xhtml>
+              </documentation>
+            </variable>
+            <variable name="out_stPlcToKin" address="%Q*">
+              <type>
+                <derived name="PLCTONC_NCICHANNEL_REF" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Struct Out to Kin Channel</xhtml>
+              </documentation>
+            </variable>
+            <variable name="stAxesConfig">
+              <type>
+                <derived name="ST_KinAxes" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Axes Configuration Structure</xhtml>
+              </documentation>
+            </variable>
+            <variable name="fbConfigKinGroup">
+              <type>
+                <derived name="FB_KinConfigGroup" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Kinematics Configuration Group			  </xhtml>
+              </documentation>
+            </variable>
+            <variable name="fbResetKinGroup">
+              <type>
+                <derived name="FB_KinResetGroup" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Reset the Kin Group</xhtml>
+              </documentation>
+            </variable>
+            <variable name="fbKinCalcTrafo">
+              <type>
+                <derived name="FB_KinCalcTrafo" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Calculating the Trafo</xhtml>
+              </documentation>
+            </variable>
+            <variable name="stAxesPosIn">
+              <type>
+                <array>
+                  <dimension lower="1" upper="8" />
+                  <baseType>
+                    <LREAL />
+                  </baseType>
+                </array>
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Struct of position into the calculation</xhtml>
+              </documentation>
+            </variable>
+            <variable name="stAxesPosOut">
+              <type>
+                <array>
+                  <dimension lower="1" upper="8" />
+                  <baseType>
+                    <LREAL />
+                  </baseType>
+                </array>
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Struct of positions out</xhtml>
+              </documentation>
+            </variable>
+            <variable name="uScaraMetaInfoIn">
+              <type>
+                <derived name="U_KinMetaInfo" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Scara Meta Info </xhtml>
+              </documentation>
+            </variable>
+            <variable name="uScaraMetaInfoOut">
+              <type>
+                <derived name="U_KinMetaInfo" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Scara Meta Info</xhtml>
+              </documentation>
+            </variable>
+            <variable name="fbUnlockTrafoParam">
+              <type>
+                <derived name="FB_KinUnlockTrafoParam" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Unlock Trafo</xhtml>
+              </documentation>
+            </variable>
+            <variable name="fbLockTrafoParam">
+              <type>
+                <derived name="FB_KinLockTrafoParam" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Lock Trafo</xhtml>
+              </documentation>
+            </variable>
+            <variable name="fbADSWRITE">
+              <type>
+                <derived name="ADSWRITE" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> ADS Write Block</xhtml>
+              </documentation>
+            </variable>
+            <variable name="pidTrafo">
+              <type>
+                <UDINT />
+              </type>
+              <initialValue>
+                <simpleValue value="16#5010020" />
+              </initialValue>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Parameter ID to Change (*Inner Arm Length*)</xhtml>
+              </documentation>
+            </variable>
+            <variable name="fParamValue">
+              <type>
+                <LREAL />
+              </type>
+              <initialValue>
+                <simpleValue value="400.0" />
+              </initialValue>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Value to write to the parameter</xhtml>
+              </documentation>
+            </variable>
+            <variable name="I_itr">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Loop Iterator</xhtml>
+              </documentation>
+            </variable>
+            <variable name="nState">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> State of the state machine</xhtml>
+              </documentation>
+            </variable>
+            <variable name="bStart">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Control Variables</xhtml>
+              </documentation>
+            </variable>
+            <variable name="bHalt">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="bDoneMoving">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="bCalcTrafo">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="bAdjustTrafo">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="bRepeat">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+          </localVars>
+          <localVars constant="true">
+            <variable name="MAX_ACS_AXES">
+              <type>
+                <INT />
+              </type>
+              <initialValue>
+                <simpleValue value="4" />
+              </initialValue>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> ACS Axes Count</xhtml>
+              </documentation>
+            </variable>
+            <variable name="MAX_MCS_AXES">
+              <type>
+                <INT />
+              </type>
+              <initialValue>
+                <simpleValue value="4" />
+              </initialValue>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> MCS Axes Count</xhtml>
+              </documentation>
+            </variable>
+            <variable name="AXES_JOINT_POSE">
+              <type>
+                <array>
+                  <dimension lower="1" upper="MAX_ACS_AXES" />
+                  <baseType>
+                    <LREAL />
+                  </baseType>
+                </array>
+              </type>
+              <initialValue>
+                <arrayValue>
+                  <value>
+                    <simpleValue value="0.0" />
+                  </value>
+                  <value>
+                    <simpleValue value="90.0" />
+                  </value>
+                  <value>
+                    <simpleValue value="0.0" />
+                  </value>
+                  <value>
+                    <simpleValue value="0.0" />
+                  </value>
+                </arrayValue>
+              </initialValue>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> Joint Positions</xhtml>
+              </documentation>
+            </variable>
+          </localVars>
+        </interface>
+        <actions>
+          <action name="Step_1_Axes_List">
+            <body>
+              <ST>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">(*
+
+// Assign the ACS Axes
+FOR I_itr := 1 TO MAX_ACS_AXES DO
+	stAxesConfig.nAxisIdsAcs[I_itr] := ACS_Axis[I_itr].NcToPlc.AxisId;
+END_FOR
+// Assign the MCS Axes
+FOR I_itr := 1 TO MAX_MCS_AXES DO
+	stAxesConfig.nAxisIdsMcs[I_itr] := MCS_Axis[I_itr].NcToPlc.AxisId;
+END_FOR
+
+*)
+
+
+nState := nState + 10; 		 </xhtml>
+              </ST>
+            </body>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>24b00717-c4d2-482e-8c6e-ab079fb41718</ObjectId>
+              </data>
+            </addData>
+          </action>
+          <action name="Step_2_Configure_Kin_Group">
+            <body>
+              <ST>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">(*
+fbConfigKinGroup(bExecute := TRUE, 
+					bCartesianMode := TRUE, 
+					stAxesList := stAxesConfig, 
+					stKinRefIn := in_stKinToPlc); 
+					
+(*******************************************)
+// If you get an error, think about why it doesnt work
+IF fbConfigKinGroup.bDone THEN
+	nState := nState + 10;	 
+END_IF
+*)
+
+// Comment Me
+nState := nState + 10;	 </xhtml>
+              </ST>
+            </body>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>8a4f5d3a-3e09-457a-9c8b-9b137bed41a6</ObjectId>
+              </data>
+            </addData>
+          </action>
+          <action name="Step_3_Fix_Kin_Config">
+            <body>
+              <ST>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">(*
+CASE nState OF
+	60:	// Step 2 might have an issue, here is where you'll fix it
+		(**********************************************************)
+		FOR I_itr := 1 TO MAX_ACS_AXES DO
+			mcSetPosition[I_itr](Axis := ACS_Axis[I_itr], Execute := TRUE, Position := AXES_JOINT_POSE[I_itr]);		 
+	 	END_FOR
+		(**********************************************************)	 
+		nState := nState + 10; 
+			 
+	70: // Check if the command is complete
+		(**********************************************************)
+		FOR I_itr := 1 TO MAX_ACS_AXES DO
+			mcSetPosition[I_itr](Axis := ACS_Axis[I_itr], Execute := FALSE, Position := AXES_JOINT_POSE[I_itr]);		 
+	 	END_FOR
+		(**********************************************************)	 
+		nState := nState + 10;
+END_CASE
+*)
+
+// Comment Me Out
+nState := nState + 10;</xhtml>
+              </ST>
+            </body>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>1f0ea83b-8595-4f36-8354-e165e00256f5</ObjectId>
+              </data>
+            </addData>
+          </action>
+          <action name="Step_4_Calc_Trafo">
+            <body>
+              <ST>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">// Toggle eveything false		 
+fbKinCalcTrafo(
+	bExecute := FALSE,	
+	bForward := FALSE, 
+	stAxesPosIn := stAxesPosIn, 
+	stAxesPosOut := stAxesPosOut, 
+	uMetaInfoIn:= uScaraMetaInfoIn, 
+	uMetaInfoOut:= uScaraMetaInfoOut);
+	 
+// Check if Kinematics is running, if not then calculate the MCS
+IF F_KinGetChnOperationState(stKinRefIn := in_stKinToPlc) = E_KinStatus.KinStatus_Ready THEN
+	FOR I_itr := 1 TO MAX_MCS_AXES DO
+		MCS_Positions[I_itr] := MCS_Axis[I_itr].NcToPlc.ActPos;
+	END_FOR		 
+ELSE
+	// Copy the ACS positions for calculation
+	FOR I_itr := 1 TO MAX_MCS_AXES DO
+		stAxesPosIn[I_itr] := ACS_Axis[I_itr].NcToPlc.ActPos;
+	END_FOR		 
+	// Tell the calculation that the SCARA is a Right Arm		  
+	uScaraMetaInfoIn.eScara := E_KinMetaInfoScara.scaraRightArm;
+	
+	// Compute the kinematics
+	fbKinCalcTrafo(
+		bExecute := TRUE, 
+		bForward := TRUE, 
+		oidTrafo := oidTrafo, 
+		stAxesPosIn := stAxesPosIn, 
+		stAxesPosOut := stAxesPosOut, 
+		uMetaInfoIn:= uScaraMetaInfoIn, 
+		uMetaInfoOut:= uScaraMetaInfoOut); 	
+			 
+	// Copy the computed values into the MCS_Position array
+	FOR I_itr := 1 TO MAX_MCS_AXES DO
+		MCS_Positions[I_itr] := stAxesPosOut[I_itr];
+	END_FOR		  
+ END_IF</xhtml>
+              </ST>
+            </body>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>14d4bc5f-fb82-4dd4-a75f-c6c7a6f8c98b</ObjectId>
+              </data>
+            </addData>
+          </action>
+          <action name="Step_5_Reconfig_Kin_Group">
+            <body>
+              <ST>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">(*
+fbResetKinGroup(
+	bExecute := TRUE, 
+	nItpChannelId := in_stKinToPlc.ChnId, 
+	stKinRefIn := in_stKinToPlc, 
+	stAxesList := stAxesConfig);
+		 
+IF fbResetKinGroup.bDone THEN
+	fbResetKinGroup(bExecute := FALSE, nItpChannelId := in_stKinToPlc.ChnId, stKinRefIn := in_stKinToPlc, stAxesList := stAxesConfig);	 
+	nState := nState + 10;	 
+END_IF	
+*)	 
+
+// Comment Me
+nState := nState + 10;	</xhtml>
+              </ST>
+            </body>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>2a12aa83-1319-44b9-a8c5-14797e58d8fe</ObjectId>
+              </data>
+            </addData>
+          </action>
+          <action name="Step_6_Adjust_Trafo">
+            <body>
+              <ST>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">(*CASE nState OF
+	120: (*
+		** Step 6 - Unlock Trafo and Modify Params
+		*)
+		(*******************************************)
+		fbUnlockTrafoParam(bExecute := TRUE, oidTrafo := oidTrafo);
+		IF fbUnlockTrafoParam.bDone THEN
+			fbUnlockTrafoParam(bExecute := FALSE, oidTrafo := oidTrafo);
+			nState := nState + 10;	 
+		END_IF
+		(*******************************************)
+			 
+	130: // Write the value with ADS
+		(*******************************************)
+		fbADSWRITE(	NETID:='' ,
+					PORT:= AMSPORT_R0_NCSAF,
+					IDXGRP:=oidTrafo ,
+					IDXOFFS:= pidTrafo,
+					LEN:=SIZEOF(fParamValue) ,
+					SRCADDR:= ADR(fParamValue),
+					WRITE:=TRUE);	
+
+		IF NOT fbADSWRITE.BUSY THEN
+			fbADSWRITE(WRITE:=FALSE);
+			nState := nState + 10;	 
+		END_IF	  
+		(*******************************************)
+	140: // Lock Trafo back up
+		(*******************************************)
+		fbLockTrafoParam(bExecute := TRUE, oidTrafo := oidTrafo);					   
+		IF fbLockTrafoParam.bDone THEN
+			fbLockTrafoParam(bExecute := FALSE, oidTrafo := oidTrafo);
+			nState := nState + 10;
+		END_IF
+		(*******************************************)	
+END_CASE
+*)
+
+// Comment Me
+nState := nState + 30;</xhtml>
+              </ST>
+            </body>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>fd84875b-77bd-4256-9d85-251e1e9603e0</ObjectId>
+              </data>
+            </addData>
+          </action>
+          <action name="ACS_MCS_Power">
+            <body>
+              <ST>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">CASE nState OF
+	10: // Power on the axis
+		FOR I_itr := 1 TO MAX_ACS_AXES DO
+			mcACS_Power[I_itr](Axis := ACS_Axis[I_itr], Enable := TRUE, Enable_Positive := TRUE, Enable_Negative := TRUE, Override := 100.0);
+		END_FOR
+		nState := nState + 10;
+	
+	20: // Check all axis are enabled
+		FOR I_itr := 1 TO MAX_ACS_AXES DO
+			// Check if motor is enabled
+			IF NOT mcACS_Power[I_itr].Status THEN
+				// Return to power state, or reset state if you have one
+				// At the end of this state we add 10, so to return to 10 we need to subtract 20
+				nState := nState - 20;
+				EXIT;
+			END_IF
+		END_FOR
+		nState := nState + 10;
+
+	30: // Power on the axis
+		FOR I_itr := 1 TO MAX_MCS_AXES DO
+			mcMCS_Power[I_itr](Axis := MCS_Axis[I_itr], Enable := TRUE, Enable_Positive := TRUE, Enable_Negative := TRUE, Override := 100.0);
+		END_FOR
+		nState := nState + 10;
+	
+	40: // Check all axis are enabled
+		FOR I_itr := 1 TO MAX_MCS_AXES DO
+			// Check if motor is enabled
+			IF NOT mcMCS_Power[I_itr].Status THEN
+				// Return to power state, or reset state if you have one
+				// At the end of this state we add 10, so to return to 10 we need to subtract 20
+				nState := nState - 20;
+				EXIT;
+			END_IF
+		END_FOR
+		nState := nState + 10;
+END_CASE</xhtml>
+              </ST>
+            </body>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>75c69b50-427d-445f-b38e-187e342bf86f</ObjectId>
+              </data>
+            </addData>
+          </action>
+        </actions>
+        <body>
+          <ST>
+            <xhtml xmlns="http://www.w3.org/1999/xhtml">// Simple NC State Machine
+
+CASE nState OF
+	0:	// Start the state machine
+		IF bStart THEN
+			bStart := FALSE;
+			nState := nState + 10;
+		END_IF
+	
+	10..40: 
+		// Power on all axis (Both ACS and MCS)
+		ACS_MCS_Power();
+	  
+	50: 
+		// Step 1 - Assemble the Axes List Struct
+		Step_1_Axes_List();
+	 
+	60..70:	
+		// Step 3 - might have an issue at Step 2, so here is where you'll fix it
+		Step_3_Fix_Kin_Config();
+			   
+	80: 
+		//	Step 2 - Configure Kinematic Group
+		Step_2_Configure_Kin_Group();
+					  
+	90: 
+		(*
+		** Move the robot!
+		*)
+		(*******************************************)	 
+		// Command to move on from this step				   
+		IF bDoneMoving THEN
+			bDoneMoving := FALSE;
+			nState := nState + 10;
+		END_IF
+		(*******************************************)	
+		
+	100: 
+		// Step 5 - Break the Kinematic Group
+		Step_5_Reconfig_Kin_Group(); 				   
+		 
+	110: 
+		// Wait state before adjustment
+		IF bAdjustTrafo THEN
+			bAdjustTrafo := FALSE;
+			nState := nState + 10;
+		END_IF
+	
+	120..140:
+		// Step 6 - Unlock Trafo and Modify Params
+		Step_6_Adjust_Trafo();	 
+		
+	150: 
+		// Check if repeating state machine
+		IF bRepeat THEN
+			bRepeat := FALSE;
+			nState := 60;
+		END_IF		
+END_CASE
+
+
+// Step 4 - Calculate the Transformation
+IF bCalcTrafo THEN
+	Step_4_Calc_Trafo();
+END_IF
+
+	 </xhtml>
+          </ST>
+        </body>
+        <addData>
+          <data name="http://www.3s-software.com/plcopenxml/interfaceasplaintext" handleUnknown="implementation">
+            <InterfaceAsPlainText>
+              <xhtml xmlns="http://www.w3.org/1999/xhtml">PROGRAM MAIN
+VAR	
+	{region 'NC Variables'}
+	// Status Array of MCS Position
+	MCS_Positions : ARRAY[1..MAX_MCS_AXES] OF LREAL;	
+	// Axis Control Ref for ACS
+	ACS_Axis		: ARRAY[1..MAX_ACS_AXES] OF Axis_Ref;
+	// Axis Control Ref for MCS
+	MCS_Axis		: ARRAY[1..MAX_MCS_AXES] OF Axis_Ref;
+	// ACS Axis Power Block
+	mcACS_Power 	: ARRAY[1..MAX_ACS_AXES] OF MC_Power;
+	// MCS Axis Power Block
+	mcMCS_Power 	: ARRAY[1..MAX_MCS_AXES] OF MC_Power;
+	// Axis Set Position Block
+	mcSetPosition 	: ARRAY[1..MAX_ACS_AXES] OF MC_SetPosition;
+	{endregion}
+		 
+	{region  'Kinematics Variables'}
+	// Kinematic Model Reference
+	{attribute 'TcInitSymbol'}
+	oidTrafo			: OTCID;
+	// Struct In from Kin Channel
+	in_stKinToPlc      AT %I*     : NCTOPLC_NCICHANNEL_REF;
+	// Struct Out to Kin Channel
+	out_stPlcToKin     AT %Q*     : PLCTONC_NCICHANNEL_REF;	 
+	// Axes Configuration Structure
+	stAxesConfig		: ST_KinAxes;
+	// Kinematics Configuration Group			  
+	fbConfigKinGroup	: FB_KinConfigGroup;
+	// Reset the Kin Group
+	fbResetKinGroup   : FB_KinResetGroup;
+	// Calculating the Trafo
+	fbKinCalcTrafo		: FB_KinCalcTrafo;
+	// Struct of position into the calculation
+    stAxesPosIn			: ARRAY[1..8] OF LREAL;
+	// Struct of positions out
+    stAxesPosOut		: ARRAY[1..8] OF LREAL;			  
+	// Scara Meta Info 
+	uScaraMetaInfoIn	: U_KinMetaInfo;
+	// Scara Meta Info
+    uScaraMetaInfoOut	: U_KinMetaInfo;
+  	// Unlock Trafo
+	fbUnlockTrafoParam	: FB_KinUnlockTrafoParam;
+	// Lock Trafo
+	fbLockTrafoParam	: FB_KinLockTrafoParam;
+	// ADS Write Block
+    fbADSWRITE			: ADSWRITE;	
+	// Parameter ID to Change (*Inner Arm Length*)
+	pidTrafo			: UDINT := 16#05010020; 
+	// Value to write to the parameter
+	fParamValue			: LREAL := 400.0;			  
+	{endregion}
+
+	{region  'General System Variables'}
+	// Loop Iterator
+	I_itr			: INT;
+	{endregion}
+		 
+	{region 'State Machine Variables'}
+	// State of the state machine
+	nState 			: INT;
+	// Control Variables
+	bStart, bHalt, bDoneMoving, bCalcTrafo, bAdjustTrafo, bRepeat : BOOL;
+	{endregion}
+END_VAR
+VAR CONSTANT
+	{region  'Axes Constants'}
+	// ACS Axes Count
+	MAX_ACS_AXES 		: INT := 4;
+	// MCS Axes Count
+	MAX_MCS_AXES 		: INT := 4;
+	// Joint Positions
+	AXES_JOINT_POSE	: ARRAY[1..MAX_ACS_AXES] OF LREAL := [0.0, 90.0, 0.0, 0.0];
+	{endregion}
+END_VAR
+</xhtml>
+            </InterfaceAsPlainText>
+          </data>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>42e41504-19b0-4be3-aee2-d44241402398</ObjectId>
+          </data>
+        </addData>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations />
+  </instances>
+  <addData>
+    <data name="http://www.3s-software.com/plcopenxml/projectstructure" handleUnknown="discard">
+      <ProjectStructure>
+        <Object Name="MAIN" ObjectId="42e41504-19b0-4be3-aee2-d44241402398">
+          <Object Name="Step_1_Axes_List" ObjectId="24b00717-c4d2-482e-8c6e-ab079fb41718" />
+          <Object Name="Step_2_Configure_Kin_Group" ObjectId="8a4f5d3a-3e09-457a-9c8b-9b137bed41a6" />
+          <Object Name="Step_3_Fix_Kin_Config" ObjectId="1f0ea83b-8595-4f36-8354-e165e00256f5" />
+          <Object Name="Step_4_Calc_Trafo" ObjectId="14d4bc5f-fb82-4dd4-a75f-c6c7a6f8c98b" />
+          <Object Name="Step_5_Reconfig_Kin_Group" ObjectId="2a12aa83-1319-44b9-a8c5-14797e58d8fe" />
+          <Object Name="Step_6_Adjust_Trafo" ObjectId="fd84875b-77bd-4256-9d85-251e1e9603e0" />
+          <Object Name="ACS_MCS_Power" ObjectId="75c69b50-427d-445f-b38e-187e342bf86f" />
+        </Object>
+      </ProjectStructure>
+    </data>
+  </addData>
+</project>

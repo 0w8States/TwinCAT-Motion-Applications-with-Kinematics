@@ -1,0 +1,455 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0200">
+  <fileHeader companyName="Beckhoff Automation GmbH" productName="TwinCAT PLC Control" productVersion="3.5.13.21" creationDateTime="2023-10-16T11:43:55.1345865" />
+  <contentHeader name="PLC_Kin4DCable" modificationDateTime="2023-10-16T11:43:55.1374231">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="1" y="1" />
+      </fbd>
+      <ld>
+        <scaling x="1" y="1" />
+      </ld>
+      <sfc>
+        <scaling x="1" y="1" />
+      </sfc>
+    </coordinateInfo>
+    <addData>
+      <data name="http://www.3s-software.com/plcopenxml/projectinformation" handleUnknown="implementation">
+        <ProjectInformation />
+      </data>
+    </addData>
+  </contentHeader>
+  <types>
+    <dataTypes />
+    <pous>
+      <pou name="FB_Power" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="bEnable">
+              <type>
+                <BOOL />
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE" />
+              </initialValue>
+            </variable>
+            <variable name="fOverride">
+              <type>
+                <LREAL />
+              </type>
+              <initialValue>
+                <simpleValue value="1.0" />
+              </initialValue>
+            </variable>
+          </inputVars>
+          <inOutVars>
+            <variable name="stAxisAcs">
+              <type>
+                <array>
+                  <dimension lower="1" upper="4" />
+                  <baseType>
+                    <derived name="AXIS_REF" />
+                  </baseType>
+                </array>
+              </type>
+            </variable>
+            <variable name="stAxisMcs">
+              <type>
+                <array>
+                  <dimension lower="1" upper="3" />
+                  <baseType>
+                    <derived name="AXIS_REF" />
+                  </baseType>
+                </array>
+              </type>
+            </variable>
+          </inOutVars>
+          <outputVars>
+            <variable name="bAllAxesReady">
+              <type>
+                <BOOL />
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE" />
+              </initialValue>
+            </variable>
+            <variable name="bError">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+          </outputVars>
+          <localVars>
+            <variable name="fbPowerAcs">
+              <type>
+                <array>
+                  <dimension lower="1" upper="4" />
+                  <baseType>
+                    <derived name="MC_Power" />
+                  </baseType>
+                </array>
+              </type>
+            </variable>
+            <variable name="fbPowerMcs">
+              <type>
+                <array>
+                  <dimension lower="1" upper="3" />
+                  <baseType>
+                    <derived name="MC_Power" />
+                  </baseType>
+                </array>
+              </type>
+            </variable>
+            <variable name="i">
+              <type>
+                <UINT />
+              </type>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml xmlns="http://www.w3.org/1999/xhtml">bAllAxesReady := TRUE;
+bError := FALSE;
+
+FOR i:=1 TO 4 DO
+	fbPowerAcs[i](Axis:=stAxisAcs[i],
+		Enable			:= bEnable,
+		Enable_Positive	:= bEnable,
+		Enable_Negative	:= bEnable
+	);
+	
+	IF i &lt;= 3 THEN
+		fbPowerMcs[i](Axis:=stAxisMcs[i],
+			Enable			:= bEnable,
+			Enable_Positive	:= bEnable,
+			Enable_Negative	:= bEnable
+		);
+		
+		bAllAxesReady := bAllAxesReady AND fbPowerAcs[i].Status AND fbPowerMcs[i].Status; 
+		bError := bError OR fbPowerAcs[i].Error OR fbPowerMcs[i].Error;
+		
+	ELSE
+		bAllAxesReady := bAllAxesReady AND fbPowerAcs[i].Status;
+		bError := bError OR fbPowerAcs[i].Error;
+	END_IF
+	 
+END_FOR</xhtml>
+          </ST>
+        </body>
+        <addData>
+          <data name="http://www.3s-software.com/plcopenxml/interfaceasplaintext" handleUnknown="implementation">
+            <InterfaceAsPlainText>
+              <xhtml xmlns="http://www.w3.org/1999/xhtml">FUNCTION_BLOCK FB_Power
+VAR_INPUT
+	bEnable			: BOOL := FALSE;
+	fOverride		: LREAL := 1.0;
+END_VAR
+VAR_IN_OUT
+	stAxisAcs		: ARRAY[1..4] OF AXIS_REF;
+	stAxisMcs		: ARRAY[1..3] OF AXIS_REF;
+END_VAR
+VAR_OUTPUT
+	bAllAxesReady	: BOOL := FALSE;
+	bError			: BOOL;
+END_VAR
+VAR
+	fbPowerAcs		: ARRAY [1..4] OF MC_Power;
+	fbPowerMcs	 	: ARRAY [1..3] OF MC_Power;
+	i				: UINT;
+END_VAR
+</xhtml>
+            </InterfaceAsPlainText>
+          </data>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>f4074599-01e5-40b3-b609-a36846c6bc1f</ObjectId>
+          </data>
+        </addData>
+      </pou>
+      <pou name="MAIN" pouType="program">
+        <interface>
+          <localVars>
+            <variable name="bUserStartSequence">
+              <type>
+                <BOOL />
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE" />
+              </initialValue>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> user interaction </xhtml>
+              </documentation>
+            </variable>
+            <variable name="fUserOverride">
+              <type>
+                <LREAL />
+              </type>
+              <initialValue>
+                <simpleValue value="100.0" />
+              </initialValue>
+            </variable>
+            <variable name="fUserVelocityToStartPos">
+              <type>
+                <LREAL />
+              </type>
+              <initialValue>
+                <simpleValue value="100" />
+              </initialValue>
+            </variable>
+            <variable name="nState">
+              <type>
+                <INT />
+              </type>
+              <initialValue>
+                <simpleValue value="0" />
+              </initialValue>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml"> </xhtml>
+              </documentation>
+            </variable>
+            <variable name="stAxisAcs">
+              <type>
+                <array>
+                  <dimension lower="1" upper="4" />
+                  <baseType>
+                    <derived name="AXIS_REF" />
+                  </baseType>
+                </array>
+              </type>
+            </variable>
+            <variable name="stAxisMcs">
+              <type>
+                <array>
+                  <dimension lower="1" upper="3" />
+                  <baseType>
+                    <derived name="AXIS_REF" />
+                  </baseType>
+                </array>
+              </type>
+            </variable>
+            <variable name="stKinRefIn" address="%I*">
+              <type>
+                <derived name="NCTOPLC_NCICHANNEL_REF" />
+              </type>
+            </variable>
+            <variable name="stKinRefOut" address="%Q*">
+              <type>
+                <derived name="PLCTONC_NCICHANNEL_REF" />
+              </type>
+            </variable>
+            <variable name="fbPower">
+              <type>
+                <derived name="FB_Power" />
+              </type>
+            </variable>
+            <variable name="fbKinConfigGroup">
+              <type>
+                <derived name="FB_KinConfigGroup" />
+              </type>
+            </variable>
+            <variable name="fbKinResetGroup">
+              <type>
+                <derived name="FB_KinResetGroup" />
+              </type>
+            </variable>
+            <variable name="fbKinCalcTrafo">
+              <type>
+                <derived name="FB_KinCalcTrafo" />
+              </type>
+            </variable>
+            <variable name="stKinAxesList">
+              <type>
+                <derived name="ST_KinAxes" />
+              </type>
+            </variable>
+            <variable name="fbMoveAbsoluteAx1">
+              <type>
+                <derived name="MC_MoveAbsolute" />
+              </type>
+            </variable>
+            <variable name="fbMoveAbsoluteAx2">
+              <type>
+                <derived name="MC_MoveAbsolute" />
+              </type>
+            </variable>
+            <variable name="fbMoveAbsoluteAx3">
+              <type>
+                <derived name="MC_MoveAbsolute" />
+              </type>
+            </variable>
+            <variable name="fbMoveAbsoluteAx4">
+              <type>
+                <derived name="MC_MoveAbsolute" />
+              </type>
+            </variable>
+            <variable name="bBuildKinGroup">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="bPayloadAttached">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+          </localVars>
+        </interface>
+        <actions>
+          <action name="ReadAxisStatus">
+            <body>
+              <ST>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">stAxisAcs[1].ReadStatus();
+stAxisAcs[2].ReadStatus();
+stAxisAcs[3].ReadStatus();
+stAxisMcs[1].ReadStatus();
+stAxisMcs[2].ReadStatus();
+stAxisMcs[3].ReadStatus();</xhtml>
+              </ST>
+            </body>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>a4122062-a39b-42af-9028-0cb09afc2932</ObjectId>
+              </data>
+            </addData>
+          </action>
+        </actions>
+        <body>
+          <ST>
+            <xhtml xmlns="http://www.w3.org/1999/xhtml">// =========================================
+// ToDo: Add Description
+// =========================================
+
+ReadAxisStatus();
+
+// Power all axes
+fbPower(
+	bEnable := TRUE, 
+	fOverride := fUserOverride,
+	stAxisAcs := stAxisAcs,
+	stAxisMcs := stAxisMcs, 
+	bAllAxesReady =&gt;,
+	bError =&gt; );
+
+IF fbPower.bError THEN	
+	(* ToDo: add error handling *)
+END_IF	
+
+CASE nState OF
+0:	// read the IDs from the cyclic axis interface so the axes can mapped later to the kinematic group 
+	IF bUserStartSequence AND fbPower.bAllAxesReady THEN
+		stKinAxesList.nAxisIdsAcs[1] := stAxisAcs[1].NcToPlc.AxisId;
+		stKinAxesList.nAxisIdsAcs[2] := stAxisAcs[2].NcToPlc.AxisId;
+		stKinAxesList.nAxisIdsAcs[3] := stAxisAcs[3].NcToPlc.AxisId;
+		stKinAxesList.nAxisIdsAcs[4] := stAxisAcs[4].NcToPlc.AxisId;
+		
+		stKinAxesList.nAxisIdsMcs[1] := stAxisMcs[1].NcToPlc.AxisId;
+		stKinAxesList.nAxisIdsMcs[2] := stAxisMcs[2].NcToPlc.AxisId;
+		stKinAxesList.nAxisIdsMcs[3] := stAxisMcs[3].NcToPlc.AxisId;
+		
+		bUserStartSequence := FALSE;
+		nState := nState + 10;
+	END_IF
+	
+10:	
+	fbMoveAbsoluteAx1(Axis:= stAxisAcs[1], Execute:= TRUE, Position:= 1500, Velocity:= fUserVelocityToStartPos);
+	fbMoveAbsoluteAx2(Axis:= stAxisAcs[2], Execute:= TRUE, Position:= 1500, Velocity:= fUserVelocityToStartPos);
+	fbMoveAbsoluteAx3(Axis:= stAxisAcs[3], Execute:= TRUE, Position:= 1500, Velocity:= fUserVelocityToStartPos);
+	fbMoveAbsoluteAx4(Axis:= stAxisAcs[4], Execute:= TRUE, Position:= 1500, Velocity:= fUserVelocityToStartPos);
+
+
+	IF fbMoveAbsoluteAx1.Done AND fbMoveAbsoluteAx2.Done AND fbMoveAbsoluteAx3.Done AND fbMoveAbsoluteAx4.Done THEN
+		fbMoveAbsoluteAx1( Axis:= stAxisAcs[1], Execute:= FALSE); 
+		fbMoveAbsoluteAx2( Axis:= stAxisAcs[2], Execute:= FALSE); 
+		fbMoveAbsoluteAx3( Axis:= stAxisAcs[3], Execute:= FALSE); 
+		fbMoveAbsoluteAx4( Axis:= stAxisAcs[4], Execute:= FALSE);	
+		nState := nState +10;
+	ELSIF fbMoveAbsoluteAx1.Error OR fbMoveAbsoluteAx2.Error OR fbMoveAbsoluteAx3.Error OR fbMoveAbsoluteAx4.Error THEN
+		(* ToDo: add error handling *)			
+		nState := nState +1000;	
+	END_IF	
+	
+20:
+	IF bPayloadAttached THEN
+		bPayloadAttached := FALSE;
+		nState := nState +10;
+	END_IF
+	
+30:	// configure and build kinematic group
+	fbKinConfigGroup(
+		bExecute       := TRUE,
+		bCartesianMode := TRUE,
+		stAxesList     := stKinAxesList,
+		stKinRefIn     := stKinRefIn ); 
+	
+	IF fbKinConfigGroup.bDone THEN
+		fbKinConfigGroup(bExecute := FALSE, stAxesList := stKinAxesList, stKinRefIn := stKinRefIn);
+		nState := nState +10;
+	ELSIF fbKinConfigGroup.bError THEN
+		(* ToDo: add error handling *)			
+		nState := nState +1000;	
+	END_IF	
+	
+1000..9999:
+	;//Error				
+END_CASE
+
+</xhtml>
+          </ST>
+        </body>
+        <addData>
+          <data name="http://www.3s-software.com/plcopenxml/interfaceasplaintext" handleUnknown="implementation">
+            <InterfaceAsPlainText>
+              <xhtml xmlns="http://www.w3.org/1999/xhtml">PROGRAM MAIN
+VAR
+	(* user interaction *)
+	bUserStartSequence		: BOOL 	:= FALSE;
+	fUserOverride			: LREAL	:= 100.0;
+	fUserVelocityToStartPos	: LREAL := 100;
+	
+	(* *)
+	nState					: INT := 0;
+	stAxisAcs				: ARRAY[1..4] OF AXIS_REF;
+	stAxisMcs				: ARRAY[1..3] OF AXIS_REF;
+	
+	stKinRefIn    AT %I*	: NCTOPLC_NCICHANNEL_REF;
+	stKinRefOut   AT %Q*  	: PLCTONC_NCICHANNEL_REF;
+	
+	fbPower					: FB_Power;
+	fbKinConfigGroup      	: FB_KinConfigGroup;	
+	fbKinResetGroup			: FB_KinResetGroup;
+	fbKinCalcTrafo			: FB_KinCalcTrafo;
+	stKinAxesList          	: ST_KinAxes;
+	
+		
+	fbMoveAbsoluteAx1		: MC_MoveAbsolute;
+	fbMoveAbsoluteAx2		: MC_MoveAbsolute;
+	fbMoveAbsoluteAx3		: MC_MoveAbsolute;
+	fbMoveAbsoluteAx4		: MC_MoveAbsolute;
+	
+	bBuildKinGroup			: BOOL;
+	bPayloadAttached		: BOOL;
+END_VAR
+</xhtml>
+            </InterfaceAsPlainText>
+          </data>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>86e0770b-170d-41fd-ad76-e30f165c7b3f</ObjectId>
+          </data>
+        </addData>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations />
+  </instances>
+  <addData>
+    <data name="http://www.3s-software.com/plcopenxml/projectstructure" handleUnknown="discard">
+      <ProjectStructure>
+        <Object Name="FB_Power" ObjectId="f4074599-01e5-40b3-b609-a36846c6bc1f" />
+        <Object Name="MAIN" ObjectId="86e0770b-170d-41fd-ad76-e30f165c7b3f">
+          <Object Name="ReadAxisStatus" ObjectId="a4122062-a39b-42af-9028-0cb09afc2932" />
+        </Object>
+      </ProjectStructure>
+    </data>
+  </addData>
+</project>
